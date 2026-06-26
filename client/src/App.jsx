@@ -5,7 +5,7 @@ import OfficerDashboard from './pages/OfficerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
 
 export default function App() {
   const [user, setUser] = useState(null);
