@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { LogOut, Shield, User, Hammer, Users, AlertTriangle, CheckCircle, RefreshCcw, BellRing, Trash } from 'lucide-react';
+import { LogOut, Shield, User, Hammer, Users, AlertTriangle, CheckCircle, RefreshCcw, BellRing, Trash, Sun, Moon } from 'lucide-react';
 
-export default function AdminDashboard({ user, incidents, alerts, onAssign, onEscalate, onLogout, setPage }) {
+export default function AdminDashboard({ user, incidents, alerts, auditLogs, onAssign, onEscalate, onLogout, setPage, theme, setTheme }) {
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'escalated' | 'resolved' | 'spam'
   const [selectedIncident, setSelectedIncident] = useState(null);
   const [assignedOfficer, setAssignedOfficer] = useState('officer_roads');
@@ -53,6 +53,15 @@ export default function AdminDashboard({ user, incidents, alerts, onAssign, onEs
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Theme switcher */}
+          <button
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-all shadow-sm"
+            title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+          >
+            {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
+
           {/* Quick link to Analytics Dashboard */}
           <button 
             onClick={() => setPage('analytics')}
@@ -91,7 +100,7 @@ export default function AdminDashboard({ user, incidents, alerts, onAssign, onEs
               
               {/* Tab Toggles */}
               <div className="flex flex-wrap gap-1.5">
-                {['all', 'escalated', 'resolved', 'spam'].map((tab) => (
+                {['all', 'escalated', 'resolved', 'spam', 'audits'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => { setActiveTab(tab); setSelectedIncident(null); }}
@@ -107,8 +116,26 @@ export default function AdminDashboard({ user, incidents, alerts, onAssign, onEs
               </div>
             </div>
 
-            {/* Incident Rows */}
-            <div className="overflow-x-auto mt-4">
+             {/* Incident Rows or Audit Logs */}
+             {activeTab === 'audits' ? (
+              <div className="space-y-3 mt-4 max-h-[400px] overflow-y-auto pr-1">
+                {auditLogs.length === 0 ? (
+                  <p className="text-xs text-slate-400 text-center py-12">No audit logs recorded in database.</p>
+                ) : (
+                  auditLogs.map(log => (
+                    <div key={log._id || log.id} className="p-3.5 rounded-xl border border-slate-100 bg-slate-50 flex items-start justify-between gap-3 text-xs">
+                      <div>
+                        <span className="font-extrabold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider">{log.action}</span>
+                        <p className="text-slate-700 font-medium mt-1.5 leading-relaxed">{log.details}</p>
+                        <span className="text-[9px] text-slate-400 font-mono mt-1 block">timestamp: {new Date(log.timestamp).toLocaleString()}</span>
+                      </div>
+                      <span className="text-[10px] text-slate-500 font-semibold bg-slate-200/50 px-1.5 py-0.5 rounded font-mono">@{log.operatorId}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : (
+             <div className="overflow-x-auto mt-4">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
@@ -178,7 +205,8 @@ export default function AdminDashboard({ user, incidents, alerts, onAssign, onEs
                   )}
                 </tbody>
               </table>
-            </div>
+             </div>
+            )}
 
           </div>
         </section>

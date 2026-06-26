@@ -24,7 +24,19 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 2. SUBMIT A NEW GRIVANCE
+// 1.5. GET ALL AUDIT LOGS
+router.get('/audit-logs', authenticateToken, async (req, res) => {
+  try {
+    const list = await db.auditLogs.find({});
+    const sorted = list.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    res.json(sorted);
+  } catch (error) {
+    console.error('Error fetching audit logs:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+// 2. SUBMIT A NEW GRIEVANCE
 router.post('/submit', authenticateToken, async (req, res) => {
   const { description, latitude, longitude, beforeImage } = req.body;
   const username = req.user.username;
@@ -53,6 +65,15 @@ router.post('/submit', authenticateToken, async (req, res) => {
         isSpam: true,
         beforeImage
       });
+
+      // Log to Audits
+      await db.auditLogs.create({
+        action: 'SPAM_FILTERED',
+        details: `Spam blocked by Sarthi AI Spam Guard: ${spamCheck.reason}`,
+        operatorId: username,
+        incidentId: spamIncident._id || spamIncident.id
+      });
+
       return res.status(400).json({
         message: 'Submission rejected by Sarthi AI Spam Guard.',
         reason: spamCheck.reason,
@@ -108,6 +129,14 @@ router.post('/submit', authenticateToken, async (req, res) => {
         assignedOfficer: clusterMaster.assignedOfficer
       });
 
+      // Log to Audits
+      await db.auditLogs.create({
+        action: 'INCIDENT_CLUSTERED',
+        details: `Incident clustered under verified master ticket ID: ${clusterMaster._id || clusterMaster.id}.`,
+        operatorId: username,
+        incidentId: clusterMaster._id || clusterMaster.id
+      });
+
       // Reward points for duplicate report validation (+5 pts)
       await db.users.findByIdAndUpdate(req.user.id, {
         $inc: { points: 5 }
@@ -140,6 +169,14 @@ router.post('/submit', authenticateToken, async (req, res) => {
       isClusterMaster: true,
       clusterId: null,
       beforeImage
+    });
+
+    // Log to Audits
+    await db.auditLogs.create({
+      action: 'INCIDENT_SUBMISSION',
+      details: `Grievance submitted. Routed by Sarthi AI to: ${aiParsed.department}. Priority Score: ${priority}`,
+      operatorId: username,
+      incidentId: newIncident._id || newIncident.id
     });
 
     // Reward points for creating a fresh, valid report (+15 pts)
@@ -186,6 +223,14 @@ router.post('/:id/upvote', authenticateToken, async (req, res) => {
       });
     }
 
+    // Log to Audits
+    await db.auditLogs.create({
+      action: 'INCIDENT_UPVOTE',
+      details: `Incident upvoted/confirmed by citizen: ${username}. Total confirmations: ${updated.confirmations || 1}`,
+      operatorId: username,
+      incidentId: req.params.id
+    });
+
     // Award Citizen 10 Civic Honor Points
     await db.users.findByIdAndUpdate(req.user.id, {
       $inc: { points: 10 }
@@ -231,6 +276,14 @@ router.post('/:id/assign', authenticateToken, async (req, res) => {
         });
       }
     }
+
+    // Log to Audits
+    await db.auditLogs.create({
+      action: 'INCIDENT_ASSIGNMENT',
+      details: `Incident manually assigned to field officer: @${officerUsername} (Department override)`,
+      operatorId: req.user.username,
+      incidentId: req.params.id
+    });
 
     res.json({ message: `Incident assigned to ${officerUsername} successfully.`, incident: updated });
   } catch (error) {
@@ -299,6 +352,14 @@ router.post('/:id/resolve', authenticateToken, async (req, res) => {
       }
     }
 
+    // Log to Audits
+    await db.auditLogs.create({
+      action: 'INCIDENT_RESOLUTION',
+      details: `Resolution proof uploaded by officer. Double-blind verification confidence: ${verification.confidence}%. Status set to: ${status}`,
+      operatorId: req.user.username,
+      incidentId: req.params.id
+    });
+
     res.json({
       message: verification.verified 
         ? 'Resolution verified by Sarthi AI. Status set to Verified.' 
@@ -325,6 +386,14 @@ router.post('/:id/escalate', authenticateToken, async (req, res) => {
       $set: { escalated: true }
     });
 
+    // Log to Audits
+    await db.auditLogs.create({
+      action: 'INCIDENT_ESCALATION',
+      details: `Ticket manually escalated to Ward Municipal Commissioner. SLA breached.`,
+      operatorId: req.user.username,
+      incidentId: req.params.id
+    });
+
     res.json({
       message: 'Ticket successfully escalated to Ward Municipal Commissioner. Notifications fired.',
       incident: updated
@@ -334,5 +403,45 @@ router.post('/:id/escalate', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Internal server error.' });
   }
 });
+
+// SLA Monitoring background daemon (Runs every 30 seconds to simulate ticket aging)
+setInterval(async () => {
+  try {
+    const list = await db.incidents.find({
+      status: { $ne: 'Verified' },
+      isSpam: { $ne: true },
+      escalated: { $ne: true }
+    });
+
+    const now = new Date();
+    for (const inc of list) {
+      const ageMs = now - new Date(inc.createdAt);
+      // High priority SLA limit: 2 minutes (120000ms)
+      // Medium priority SLA limit: 4 minutes (240000ms)
+      // Low priority SLA limit: 6 minutes (360000ms)
+      let limit = 360000;
+      if (inc.priority >= 75) limit = 120000;
+      else if (inc.priority >= 45) limit = 240000;
+
+      if (ageMs > limit) {
+        // Trigger auto-escalation
+        await db.incidents.findByIdAndUpdate(inc._id || inc.id, {
+          $set: { escalated: true }
+        });
+        
+        await db.auditLogs.create({
+          action: 'INCIDENT_ESCALATION',
+          details: `AUTO-ESCALATION: SLA threshold exceeded. Ticket automatically escalated to Ward Municipal Commissioner.`,
+          operatorId: 'SARTHI_AI_SLA_CLOCK',
+          incidentId: inc._id || inc.id
+        });
+
+        console.log(`>>> Sarthi SLA Engine: Auto-escalated incident ID: ${inc._id || inc.id} (Priority: ${inc.priority})`);
+      }
+    }
+  } catch (err) {
+    console.error('Sarthi SLA Clock daemon error:', err);
+  }
+}, 30000);
 
 export default router;

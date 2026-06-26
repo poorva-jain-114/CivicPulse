@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mic, MicOff, LogOut, Award, PlusCircle, List, Trophy, MapPin, Image as ImageIcon, Send, ThumbsUp, CheckCircle, ShieldAlert } from 'lucide-react';
+import { Mic, MicOff, LogOut, Award, PlusCircle, List, Trophy, MapPin, Image as ImageIcon, Send, ThumbsUp, CheckCircle, ShieldAlert, Sun, Moon } from 'lucide-react';
 import Map from '../components/Map';
 
 // Preset mock before images for quick testing
@@ -10,13 +10,14 @@ const MOCK_IMAGES = [
   { name: '💧 Water Leak', url: 'https://images.unsplash.com/photo-1542013936693-8848e574047e?q=80&w=400' }
 ];
 
-export default function CitizenDashboard({ user, incidents, onCreateComplaint, onUpvote, onLogout, setPage }) {
+export default function CitizenDashboard({ user, incidents, onCreateComplaint, onUpvote, onLogout, setPage, theme, setTheme }) {
   const [description, setDescription] = useState('');
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
   const [beforeImage, setBeforeImage] = useState(MOCK_IMAGES[0].url);
   const [lang, setLang] = useState('en-US');
   const [isRecording, setIsRecording] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('feed'); // 'feed' | 'my' | 'leaderboard'
   const [speechError, setSpeechError] = useState('');
@@ -115,6 +116,14 @@ export default function CitizenDashboard({ user, incidents, onCreateComplaint, o
     { username: 'Sneha_Kulkarni', points: 95, rank: 5, ward: 'Ward 5' }
   ].sort((a, b) => b.points - a.points);
 
+  const getReputationBadge = (pts) => {
+    if (pts >= 300) return { name: 'Sarthi Champion', color: 'from-amber-500 to-yellow-500 text-white', icon: '🏆' };
+    if (pts >= 150) return { name: 'Ward Guardian', color: 'from-purple-500 to-indigo-500 text-white', icon: '🔮' };
+    if (pts >= 50) return { name: 'Civic Scout', color: 'from-emerald-500 to-teal-500 text-white', icon: '🛡️' };
+    return { name: 'Civic Cadet', color: 'from-slate-400 to-slate-500 text-white', icon: '🔰' };
+  };
+  const badge = getReputationBadge(user.points || 0);
+
   return (
     <div className="flex-grow flex flex-col pb-16 md:pb-0">
       
@@ -126,11 +135,24 @@ export default function CitizenDashboard({ user, incidents, onCreateComplaint, o
           </div>
           <div>
             <h1 className="text-lg font-bold">Civic Pulse</h1>
-            <p className="text-[10px] text-slate-400">Citizen Portal • {user.ward}</p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <p className="text-[10px] text-slate-400">Citizen Portal • {user.ward}</p>
+              <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded bg-gradient-to-r ${badge.color}`}>
+                {badge.icon} {badge.name}
+              </span>
+            </div>
           </div>
         </div>
         
         <div className="flex items-center gap-4">
+          <button
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-all shadow-sm"
+            title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+          >
+            {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
+
           <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-xl">
             <Award className="w-4 h-4 text-emerald-400" />
             <span className="text-xs text-slate-300 font-semibold">Civic Honor:</span>
@@ -177,6 +199,11 @@ export default function CitizenDashboard({ user, incidents, onCreateComplaint, o
                   <option value="en-US">English</option>
                   <option value="hi-IN">हिन्दी (Hindi)</option>
                   <option value="mr-IN">मराठी (Marathi)</option>
+                  <option value="bn-IN">বাংলা (Bengali)</option>
+                  <option value="ta-IN">தமிழ் (Tamil)</option>
+                  <option value="kn-IN">ಕನ್ನಡ (Kannada)</option>
+                  <option value="te-IN">తెలుగు (Telugu)</option>
+                  <option value="pa-IN">ਪੰਜਾਬੀ (Punjabi)</option>
                 </select>
                 <button
                   type="button"
@@ -242,7 +269,7 @@ export default function CitizenDashboard({ user, incidents, onCreateComplaint, o
               {/* Preset images loader */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Grievance Proof Image</label>
-                <div className="grid grid-cols-4 gap-2 mb-3">
+                <div className="grid grid-cols-4 gap-2 mb-2">
                   {MOCK_IMAGES.map((img, idx) => (
                     <button
                       key={idx}
@@ -257,6 +284,28 @@ export default function CitizenDashboard({ user, incidents, onCreateComplaint, o
                       {img.name}
                     </button>
                   ))}
+                </div>
+
+                {/* Custom Image Upload */}
+                <div className="mb-3">
+                  <label className="flex items-center justify-center gap-2 w-full px-4 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                    <span>📁 Upload Custom Photo</span>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setBeforeImage(reader.result);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
                 </div>
                 
                 {beforeImage && (
@@ -419,9 +468,106 @@ export default function CitizenDashboard({ user, incidents, onCreateComplaint, o
                 <div className="space-y-4">
                   {myIncidents.length === 0 ? (
                     <p className="text-xs text-slate-400 text-center py-8">You have not submitted any civic complaints yet.</p>
+                  ) : selectedTicket ? (
+                    <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-4 shadow-inner">
+                      <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+                        <h4 className="text-xs font-bold text-slate-800">Timeline: {selectedTicket.title}</h4>
+                        <button 
+                          onClick={() => setSelectedTicket(null)}
+                          className="text-[10px] font-bold text-indigo-600 hover:underline"
+                        >
+                          ← Back to List
+                        </button>
+                      </div>
+                      
+                      <div className="space-y-4 pt-2">
+                        {/* 1. Submitted */}
+                        <div className="flex gap-3">
+                          <div className="flex flex-col items-center">
+                            <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[9px] font-bold">✓</div>
+                            <div className="w-0.5 h-6 bg-emerald-500"></div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-700">Grievance Submitted</p>
+                            <p className="text-[9px] text-slate-400">Successfully filed on regional ward map</p>
+                          </div>
+                        </div>
+
+                        {/* 2. Sarthi AI routing */}
+                        <div className="flex gap-3">
+                          <div className="flex flex-col items-center">
+                            <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[9px] font-bold">✓</div>
+                            <div className="w-0.5 h-6 bg-emerald-500"></div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-700">Sarthi AI Processing</p>
+                            <p className="text-[9px] text-slate-400">Routed to: {selectedTicket.department}</p>
+                          </div>
+                        </div>
+
+                        {/* 3. Dispatched */}
+                        <div className="flex gap-3">
+                          <div className="flex flex-col items-center">
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${
+                              selectedTicket.status !== 'Open' ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'
+                            }`}>{selectedTicket.status !== 'Open' ? '✓' : '3'}</div>
+                            <div className={`w-0.5 h-6 ${selectedTicket.status !== 'Open' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-700">Dispatched</p>
+                            <p className="text-[9px] text-slate-400">{selectedTicket.status !== 'Open' ? 'Job accepted by regional ward body' : 'Awaiting department acknowledgement'}</p>
+                          </div>
+                        </div>
+
+                        {/* 4. Assigned */}
+                        <div className="flex gap-3">
+                          <div className="flex flex-col items-center">
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${
+                              selectedTicket.assignedOfficer ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'
+                            }`}>{selectedTicket.assignedOfficer ? '✓' : '4'}</div>
+                            <div className={`w-0.5 h-6 ${selectedTicket.assignedOfficer ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-700">Officer Assigned</p>
+                            <p className="text-[9px] text-slate-400">{selectedTicket.assignedOfficer ? `Field engineer @${selectedTicket.assignedOfficer} deployed` : 'Awaiting engineer dispatch'}</p>
+                          </div>
+                        </div>
+
+                        {/* 5. In Progress */}
+                        <div className="flex gap-3">
+                          <div className="flex flex-col items-center">
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${
+                              selectedTicket.status === 'Resolved' || selectedTicket.status === 'Verified' ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'
+                            }`}>{selectedTicket.status === 'Resolved' || selectedTicket.status === 'Verified' ? '✓' : '5'}</div>
+                            <div className={`w-0.5 h-6 ${selectedTicket.status === 'Resolved' || selectedTicket.status === 'Verified' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-700">Resolution In-Progress</p>
+                            <p className="text-[9px] text-slate-400">Site updates and clean-up execution active</p>
+                          </div>
+                        </div>
+
+                        {/* 6. Fixed */}
+                        <div className="flex gap-3">
+                          <div className="flex flex-col items-center">
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${
+                              selectedTicket.status === 'Verified' ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'
+                            }`}>{selectedTicket.status === 'Verified' ? '✓' : '6'}</div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-700">Fixed & Verified</p>
+                            <p className="text-[9px] text-slate-400">{selectedTicket.status === 'Verified' ? 'Sarthi AI computer vision proof comparison complete' : 'Awaiting double-blind resolution checks'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   ) : (
                     myIncidents.map(inc => (
-                      <div key={inc._id || inc.id} className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 flex items-start justify-between gap-4">
+                      <div 
+                        key={inc._id || inc.id} 
+                        onClick={() => setSelectedTicket(inc)}
+                        className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 flex items-start justify-between gap-4 cursor-pointer hover:border-emerald-300 transition-all hover:bg-emerald-50/10"
+                      >
                         <div className="flex items-start gap-3">
                           <img src={inc.beforeImage || MOCK_IMAGES[0].url} alt="" className="w-14 h-14 object-cover rounded-lg border border-slate-200 mt-0.5" />
                           <div className="space-y-1">
@@ -446,7 +592,8 @@ export default function CitizenDashboard({ user, incidents, onCreateComplaint, o
                           </div>
                         </div>
 
-                        <div className="text-right">
+                        <div className="text-right flex flex-col items-end gap-1">
+                          <span className="text-[9px] text-indigo-500 font-bold hover:underline">Track Timeline →</span>
                           <span className="text-[9px] text-slate-400">Routed Dept</span>
                           <p className="text-[9px] font-bold text-slate-700 truncate max-w-[120px]">{inc.department}</p>
                         </div>

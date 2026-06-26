@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, MapPin, User, Building, BarChart2 } from 'lucide-react';
+import { Shield, MapPin, User, Building, BarChart2, Sun, Moon } from 'lucide-react';
 
-export default function Login({ setToken, setUser, API_BASE, setGlobalError, setGlobalSuccess }) {
+export default function Login({ setToken, setUser, API_BASE, setGlobalError, setGlobalSuccess, theme, setTheme }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [ward, setWard] = useState('Ward 5');
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [isRegister, setIsRegister] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpInput, setOtpInput] = useState('');
+  const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [seeding, setSeeding] = useState(false);
 
-  // Auto-seed database on load to ensure demo accounts are instantly functional
+  // Auto-seed database on load to ensure demo accounts are functional
   useEffect(() => {
     const seedDatabase = async () => {
       setSeeding(true);
@@ -27,7 +34,7 @@ export default function Login({ setToken, setUser, API_BASE, setGlobalError, set
     seedDatabase();
   }, [API_BASE]);
 
-  // Form submit handler
+  // Form submit handler (login)
   const handleSubmit = async (e) => {
     e?.preventDefault();
     if (!username || !password) return;
@@ -61,8 +68,106 @@ export default function Login({ setToken, setUser, API_BASE, setGlobalError, set
     }
   };
 
+  // Helper to send SMTP or simulated OTP
+  const handleSendOtp = async (e) => {
+    e?.preventDefault();
+    if (!mobileNumber || mobileNumber.length !== 10) {
+      setGlobalError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+    if (!email || !email.includes('@')) {
+      setGlobalError('Please enter a valid email address.');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/send-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, mobileNumber })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        setGlobalError(data.message || 'Failed to dispatch OTP.');
+        setLoading(false);
+        return;
+      }
+
+      setOtpCode(data.otp);
+      setOtpSent(true);
+      
+      if (data.sent) {
+        setGlobalSuccess(`🛡️ Sarthi OTP Sent: Real email verification code sent to ${email}`);
+      } else {
+        setGlobalSuccess(`🛡️ Sarthi OTP (SMTP unconfigured, showing mock): Verification code for +91-${mobileNumber} is ${data.otp}`);
+      }
+    } catch (err) {
+      setGlobalError('Failed to connect to the OTP dispatcher.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Register citizen handler
+  const handleRegister = async (e) => {
+    e?.preventDefault();
+    if (!username || !password || !mobileNumber || !email) return;
+
+    if (!otpSent) {
+      handleSendOtp(e);
+      return;
+    }
+
+    if (otpInput !== otpCode) {
+      setGlobalError('Incorrect OTP code. Please check the code sent to your email.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username,
+          password,
+          role: 'citizen',
+          ward,
+          mobileNumber,
+          email
+        })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        setGlobalError(data.message || 'Registration failed.');
+        setLoading(false);
+        return;
+      }
+
+      setGlobalSuccess('Registration successful! Please sign in using your credentials.');
+      setIsRegister(false);
+      setOtpSent(false);
+      setOtpInput('');
+      setOtpCode('');
+      setMobileNumber('');
+      setEmail('');
+    } catch (err) {
+      setGlobalError('Unable to connect to the registration server.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Quick login card helper
   const handleQuickLogin = (uname, pass) => {
+    setIsRegister(false);
     setUsername(uname);
     setPassword(pass);
     // Submit using state updates in next tick
@@ -123,11 +228,22 @@ export default function Login({ setToken, setUser, API_BASE, setGlobalError, set
         <div className="md:col-span-5 bg-gov-navy text-slate-100 p-8 md:p-12 flex flex-col justify-between relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gov-blue/40 via-gov-navy to-gov-navy opacity-75 z-0"></div>
           
-          <div className="relative z-10">
+          <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2 text-emerald-400 font-bold tracking-wider text-sm uppercase">
               <Shield className="w-5 h-5 animate-pulse" />
               Sarthi AI Powered
             </div>
+            <button
+              type="button"
+              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+              className="p-1.5 rounded-lg bg-slate-800 border border-slate-750 text-slate-300 hover:text-white transition-all shadow-md active:scale-95"
+              title={theme === 'light' ? "Switch to Dark Mode" : "Switch to Light Mode"}
+            >
+              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            </button>
+          </div>
+
+          <div className="relative z-10">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white mt-4 font-sans">
               Civic<br /><span className="text-emerald-400">Pulse</span>
             </h1>
@@ -158,11 +274,17 @@ export default function Login({ setToken, setUser, API_BASE, setGlobalError, set
         </div>
 
         {/* Right Side: Form & Quick login cards */}
-        <div className="md:col-span-7 p-8 md:p-12 flex flex-col justify-center">
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Access Control Terminal</h2>
-          <p className="text-slate-500 text-xs mt-1">Sign in with registered credentials, or select a role profile below for instant testing.</p>
+        <div className="md:col-span-7 p-8 md:p-12 flex flex-col justify-center font-sans">
+          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
+            {isRegister ? 'Register Citizen Account' : 'Access Control Terminal'}
+          </h2>
+          <p className="text-slate-500 text-xs mt-1">
+            {isRegister 
+              ? 'Create citizen credentials to report issues and earn honor points.' 
+              : 'Sign in with registered credentials, or select a role profile below for instant testing.'}
+          </p>
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form onSubmit={isRegister ? handleRegister : handleSubmit} className="mt-6 space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Username / ID</label>
               <input 
@@ -170,7 +292,8 @@ export default function Login({ setToken, setUser, API_BASE, setGlobalError, set
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-                placeholder="Enter municipal username"
+                placeholder={isRegister ? "Choose a unique username" : "Enter municipal username"}
+                disabled={otpSent}
                 required
               />
             </div>
@@ -182,25 +305,108 @@ export default function Login({ setToken, setUser, API_BASE, setGlobalError, set
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                 placeholder="••••••••"
+                disabled={otpSent}
                 required
               />
             </div>
+
+            {isRegister && (
+              <>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Email Address</label>
+                  <input 
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    placeholder="Enter your email ID"
+                    disabled={otpSent}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Mobile Number</label>
+                  <input 
+                    type="tel" 
+                    value={mobileNumber}
+                    onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, '').substring(0, 10))}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    placeholder="Enter 10-digit mobile number"
+                    disabled={otpSent}
+                    required
+                  />
+                </div>
+
+                {otpSent && (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 text-indigo-600 font-extrabold animate-pulse">Enter 6-Digit OTP Code</label>
+                    <input 
+                      type="text" 
+                      value={otpInput}
+                      onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, '').substring(0, 6))}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all font-mono tracking-[0.4em] text-center text-lg font-bold"
+                      placeholder="••••••"
+                      required
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Select Ward Location</label>
+                  <select
+                    value={ward}
+                    onChange={(e) => setWard(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all animate-none"
+                    disabled={otpSent}
+                  >
+                    <option value="Ward 1">Ward 1 (Northern Zone)</option>
+                    <option value="Ward 2">Ward 2 (Eastern Zone)</option>
+                    <option value="Ward 3">Ward 3 (Western Zone)</option>
+                    <option value="Ward 4">Ward 4 (Southern Zone)</option>
+                    <option value="Ward 5">Ward 5 (Central Zone)</option>
+                  </select>
+                </div>
+              </>
+            )}
             
             <button 
               id="login-submit-btn"
               type="submit" 
               disabled={loading}
-              className="w-full bg-gov-navy text-white text-sm font-semibold py-3 rounded-xl hover:bg-slate-800 active:scale-[0.99] transition-all flex items-center justify-center shadow-md disabled:opacity-50"
+              className="w-full bg-gov-navy text-white text-sm font-semibold py-3 rounded-xl hover:bg-slate-800 active:scale-[0.99] transition-all flex items-center justify-center shadow-md disabled:opacity-50 font-sans"
             >
-              {loading ? 'Authenticating Credentials...' : 'Access Portal'}
+              {loading 
+                ? (isRegister ? 'Processing Account...' : 'Authenticating Credentials...') 
+                : (isRegister ? (otpSent ? 'Verify OTP & Create Account' : 'Send Verification OTP') : 'Access Portal')}
             </button>
           </form>
+
+          {/* Toggle register mode */}
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegister(!isRegister);
+                setOtpSent(false);
+                setOtpInput('');
+                setOtpCode('');
+                setMobileNumber('');
+                setEmail('');
+                setUsername('');
+                setPassword('');
+              }}
+              className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold underline decoration-2 transition-all"
+            >
+              {isRegister ? 'Already have an account? Sign In' : 'New Citizen? Register/Sign Up here'}
+            </button>
+          </div>
 
           {/* Quick Login Cards */}
           <div className="mt-8 border-t border-slate-100 pt-6">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">1-Click Evaluation Profiles</h3>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[220px] overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[170px] overflow-y-auto pr-1">
               {roles.map((r, idx) => (
                 <button
                   key={idx}

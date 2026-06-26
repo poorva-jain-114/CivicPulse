@@ -113,12 +113,52 @@ export async function parseComplaint(inputText) {
   let severityScore = 40;
   let criticalKeywords = [];
 
-  // Keywords mapping for departments
-  const roadsKeywords = ['road', 'pothole', 'khadda', 'street', 'footpath', 'drain', 'digging', 'खड्डा', 'रस्ता', 'गटार'];
-  const sanitationKeywords = ['garbage', 'garbage dump', 'trash', 'waste', 'litter', 'smell', 'sewage', 'drainage overflow', 'clean', 'kachra', 'कचरा', 'घाण', 'सांडपाणी'];
-  const waterKeywords = ['water', 'pipe', 'leak', 'drainage water', 'water supply', 'contamination', 'dirty water', 'paani', 'leakage', 'पाणी', 'गळती', 'नळ'];
-  const electricityKeywords = ['light', 'streetlight', 'lamp', 'wire', 'hanging wire', 'electricity', 'current', 'power cut', 'pole', 'खांब', 'वीज', 'तार'];
-  const trafficKeywords = ['traffic', 'parking', 'illegal parking', 'signal', 'no parking', 'police', 'rto', 'jam', 'गाडी', 'पार्किंग', 'ट्रॅफिक'];
+  // Keywords mapping for departments (supporting: English, Hindi, Marathi, Bengali, Tamil, Kannada, Telugu, Punjabi)
+  const roadsKeywords = [
+    'road', 'pothole', 'khadda', 'street', 'footpath', 'drain', 'digging', 'pavement',
+    'खड्डा', 'सड़क', 'रस्ता', 'गटार', 'रस्ते',
+    'রাস্তা', 'গর্ত', 'ফুটপাথ',
+    'சாலை', 'பள்ளம்', 'பாதை',
+    'ರಸ್ತೆ', 'ಗುಂಡಿ', 'ಪಾದಚಾರಿ',
+    'రోడ్డు', 'గుంత', 'ఫుట్‌పాత్',
+    'ਸੜਕ', 'ਟੋਆ', 'ਰਾਹ'
+  ];
+  const sanitationKeywords = [
+    'garbage', 'garbage dump', 'trash', 'waste', 'litter', 'smell', 'sewage', 'drainage overflow', 'clean', 'kachra', 'dump',
+    'कचरा', 'गंदगी', 'साफ', 'घाण', 'सांडपाणी',
+    'আবর্জনা', 'ময়লা', 'নোংরা',
+    'குப்பை', 'கழிவு', 'நாற்றம்',
+    'ಕಸ', 'ತ್ಯಾಜ್ಯ', 'ಗಲೀಜು',
+    'చెత్త', 'వ్యర్థాలు', 'మురుగు',
+    'ਕੂੜਾ', 'ਗੰਦਗੀ', 'ਮਲਮੂਤਰ'
+  ];
+  const waterKeywords = [
+    'water', 'pipe', 'leak', 'drainage water', 'water supply', 'contamination', 'dirty water', 'paani', 'leakage', 'tap',
+    'पानी', 'नल', 'लीक', 'पाणी', 'गळती',
+    'জল', 'পাইপ', 'লিক',
+    'தண்ணீர்', 'குழாய்', 'கசிவு',
+    'ನೀರು', 'ಕೊಳವೆ', 'ಸೋರಿಕೆ',
+    'నీరు', 'పైప్', 'లీకేజీ',
+    'ਪਾਣੀ', 'ਪਾਈਪ', 'ਲੀਕ'
+  ];
+  const electricityKeywords = [
+    'light', 'streetlight', 'lamp', 'wire', 'hanging wire', 'electricity', 'current', 'power cut', 'pole', 'blackout', 'power',
+    'बिजली', 'तार', 'खंभा', 'लाइट', 'वीज', 'खांब', 'दिवा',
+    'বিদ্যুৎ', 'তার', 'আলো', 'খুঁটি',
+    'மின்சாரம்', 'கம்பி', 'விளக்கு',
+    'ವಿದ್ಯುತ್', 'ತಂತಿ', 'ಕಂಬ', 'ದೀಪ',
+    'విద్యుత్', 'తీగ', 'స్తంభం', 'దీపం',
+    'ਬਿਜਲੀ', 'ਤਾਰ', 'ਖੰਭਾ', 'ਬੱਤੀ'
+  ];
+  const trafficKeywords = [
+    'traffic', 'parking', 'illegal parking', 'signal', 'no parking', 'police', 'rto', 'jam', 'vehicle',
+    'पार्किंग', 'गाड़ी', 'जाम', 'गाडी', 'वाहतूक',
+    'ট্রাফিক', 'পার্কিং', 'জ্যাম',
+    'போக்குவரத்து', 'பார்க்கிங்', 'நெரிசல்',
+    'ಸಂಚಾರ', 'ಪಾರ್ಕಿಂಗ್', 'ಜಾಮ್',
+    'ట్రాఫిక్', 'పార్కింగ్', 'జామ్',
+    'ਟ੍ਰੈਫਿਕ', 'ਪਾਰਕਿੰਗ', 'ਜਾਮ'
+  ];
 
   if (roadsKeywords.some(k => text.includes(k))) {
     department = DEPARTMENTS.ROADS;
@@ -142,11 +182,11 @@ export async function parseComplaint(inputText) {
     severityScore = 45;
   }
 
-  // Critical Zones detection
+  // Critical Zones detection (Multilingual keys)
   const criticalZones = {
-    school: ['school', 'college', 'shala', 'शाळा', 'शाळेजवळ'],
-    hospital: ['hospital', 'clinic', 'davakhana', 'रुग्णालय', 'दवाखाना'],
-    transit: ['bus stop', 'railway', 'station', 'highway', 'चौक', 'station road'],
+    school: ['school', 'college', 'shala', 'शाळा', 'शाळेजवळ', 'विद्यालय', 'স্কুল', 'பள்ளி', 'ಶಾಲೆ', 'పాఠశాల', 'ਸਕੂਲ'],
+    hospital: ['hospital', 'clinic', 'davakhana', 'रुग्णालय', 'दवाखाना', 'হাসপাতাল', 'மருத்துவமனை', 'ಆಸ್ಪತ್ರೆ', 'ఆసుపత్రి', 'ਹਸਪਤਾਲ'],
+    transit: ['bus stop', 'railway', 'station', 'highway', 'चौक', 'station road', 'স্টেশন', 'நிலையம்', 'ನಿಲ್ದಾಣ', 'స్టేషన్', 'ਸਟੇਸ਼ਨ'],
   };
 
   for (const [zone, keys] of Object.entries(criticalZones)) {

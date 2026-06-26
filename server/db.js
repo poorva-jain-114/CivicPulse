@@ -12,7 +12,8 @@ if (!fs.existsSync(JSON_DB_PATH)) {
   fs.writeFileSync(JSON_DB_PATH, JSON.stringify({
     users: [],
     incidents: [],
-    alerts: []
+    alerts: [],
+    auditLogs: []
   }, null, 2));
 }
 
@@ -37,9 +38,11 @@ export async function connectDB() {
 function readJsonDB() {
   try {
     const data = fs.readFileSync(JSON_DB_PATH, 'utf-8');
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    if (!parsed.auditLogs) parsed.auditLogs = [];
+    return parsed;
   } catch (err) {
-    return { users: [], incidents: [], alerts: [] };
+    return { users: [], incidents: [], alerts: [], auditLogs: [] };
   }
 }
 
@@ -248,6 +251,25 @@ const localDB = {
       writeJsonDB(data);
       return newAlert;
     }
+  },
+  auditLogs: {
+    find: async (query = {}) => {
+      const data = readJsonDB();
+      return data.auditLogs.filter(item => {
+        return Object.keys(query).every(key => item[key] === query[key]);
+      });
+    },
+    create: async (logData) => {
+      const data = readJsonDB();
+      const newLog = {
+        _id: generateId(),
+        timestamp: new Date().toISOString(),
+        ...logData
+      };
+      data.auditLogs.push(newLog);
+      writeJsonDB(data);
+      return newLog;
+    }
   }
 };
 
@@ -259,6 +281,7 @@ const userSchema = new mongoose.Schema({
   department: { type: String, default: null },
   ward: { type: String, default: 'Ward 5' },
   points: { type: Number, default: 0 },
+  mobileNumber: { type: String, default: null },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -293,10 +316,19 @@ const alertSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+const auditLogSchema = new mongoose.Schema({
+  action: String,
+  details: String,
+  operatorId: String,
+  incidentId: String,
+  timestamp: { type: Date, default: Date.now }
+});
+
 const MongooseModels = {
   User: mongoose.model('User', userSchema),
   Incident: mongoose.model('Incident', incidentSchema),
-  Alert: mongoose.model('Alert', alertSchema)
+  Alert: mongoose.model('Alert', alertSchema),
+  AuditLog: mongoose.model('AuditLog', auditLogSchema)
 };
 
 // Wrapper that checks DB mode and delegates accordingly
@@ -321,5 +353,9 @@ export const db = {
   alerts: {
     find: (q) => dbMode === 'mongodb' ? MongooseModels.Alert.find(q).sort({ createdAt: -1 }) : localDB.alerts.find(q),
     create: (data) => dbMode === 'mongodb' ? MongooseModels.Alert.create(data) : localDB.alerts.create(data)
+  },
+  auditLogs: {
+    find: (q) => dbMode === 'mongodb' ? MongooseModels.AuditLog.find(q).sort({ timestamp: -1 }) : localDB.auditLogs.find(q),
+    create: (data) => dbMode === 'mongodb' ? MongooseModels.AuditLog.create(data) : localDB.auditLogs.create(data)
   }
 };

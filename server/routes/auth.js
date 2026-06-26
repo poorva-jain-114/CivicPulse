@@ -1,14 +1,67 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import nodemailer from 'nodemailer';
 import { db } from '../db.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'sarthi_civic_secret_key_2026';
 
+// 0. SEND OTP
+router.post('/send-otp', async (req, res) => {
+  const { email, mobileNumber } = req.body;
+  if (!email && !mobileNumber) {
+    return res.status(400).json({ message: 'Email or Mobile Number is required.' });
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Check if SMTP is configured
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_PORT === '465',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        }
+      });
+
+      await transporter.sendMail({
+        from: `"Sarthi AI" <${process.env.SMTP_USER}>`,
+        to: email || `${mobileNumber}@sarthi.local`,
+        subject: 'Civic Pulse - Sarthi AI Citizen Verification OTP',
+        text: `Your Sarthi AI registration verification code is: ${otp}. Please do not share this OTP.`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+            <h2 style="color: #0f172a; border-bottom: 2px solid #10b981; padding-bottom: 10px;">Sarthi AI Verification</h2>
+            <p>Dear Citizen,</p>
+            <p>Thank you for registering on the Civic Pulse municipal platform. To complete your account verification, please enter the following 6-digit OTP code:</p>
+            <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+              <span style="font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #10b981;">${otp}</span>
+            </div>
+            <p style="color: #64748b; font-size: 12px;">This is a simulated verification request from Sarthi AI. If you did not request this, please ignore this email.</p>
+          </div>
+        `
+      });
+
+      console.log(`[SMTP] Verification email sent to ${email} with OTP: ${otp}`);
+      return res.json({ success: true, sent: true, otp });
+    } catch (mailError) {
+      console.error('[SMTP] Failed to send email:', mailError);
+      return res.json({ success: true, sent: false, otp, error: 'SMTP send failed' });
+    }
+  } else {
+    console.log(`[SMS/EMAIL SIMULATOR] Verification code for ${email || mobileNumber} is ${otp}`);
+    return res.json({ success: true, sent: false, otp });
+  }
+});
+
 // 1. REGISTER
 router.post('/register', async (req, res) => {
-  const { username, password, role, department, ward } = req.body;
+  const { username, password, role, department, ward, mobileNumber } = req.body;
 
   if (!username || !password || !role) {
     return res.status(400).json({ message: 'Username, password, and role are required.' });
@@ -27,7 +80,8 @@ router.post('/register', async (req, res) => {
       role,
       department: role === 'officer' ? (department || 'Roads & Buildings Maintenance') : null,
       ward: ward || 'Ward 5',
-      points: 0
+      points: 0,
+      mobileNumber: mobileNumber || null
     });
 
     res.status(201).json({ message: 'User registered successfully.', userId: user._id });
@@ -119,8 +173,8 @@ router.post('/seed', async (req, res) => {
           category: 'Roads & Footpaths',
           priority: 88,
           status: 'Open',
-          latitude: 18.5204, // Pune center reference
-          longitude: 73.8567,
+          latitude: 21.1458, // Nagpur center reference
+          longitude: 79.0882,
           department: 'Roads & Buildings Maintenance',
           brief: 'Sarthi AI parsed brief: Potholes reported near school zone on main road. Highly dangerous for two-wheelers, needs urgent repair before rain.',
           reportedBy: 'citizen',
@@ -138,8 +192,8 @@ router.post('/seed', async (req, res) => {
           category: 'Sanitation & Solid Waste',
           priority: 62,
           status: 'Assigned',
-          latitude: 18.5225,
-          longitude: 73.8610,
+          latitude: 21.1479,
+          longitude: 79.0925,
           department: 'Public Health & Sanitation',
           brief: 'Sarthi AI parsed brief: Solid waste pile-up near transit station. Bad smell and stray animal congregation reported. Assigned to sanitation crew.',
           reportedBy: 'citizen',

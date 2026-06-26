@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { LogOut, CheckCircle, ArrowRight, ShieldCheck, Image as ImageIcon, Sparkles, User, Hammer, Building } from 'lucide-react';
+import { LogOut, CheckCircle, ArrowRight, ShieldCheck, Image as ImageIcon, Sparkles, User, Hammer, Building, Sun, Moon } from 'lucide-react';
+import Map from '../components/Map';
 
 const RESOLUTION_PRESETS = [
   { name: '✅ Patched Road', url: 'https://images.unsplash.com/photo-1599740831464-67252fec2e31?q=80&w=400' },
@@ -7,7 +8,7 @@ const RESOLUTION_PRESETS = [
   { name: '✅ Fixed Streetlight', url: 'https://images.unsplash.com/photo-1471286174890-9c112ffca5b4?q=80&w=400' }
 ];
 
-export default function OfficerDashboard({ user, incidents, onResolve, onLogout, setPage }) {
+export default function OfficerDashboard({ user, incidents, onResolve, onLogout, setPage, theme, setTheme }) {
   const [selectedIncident, setSelectedIncident] = useState(null);
   const [afterImage, setAfterImage] = useState(RESOLUTION_PRESETS[0].url);
   const [briefText, setBriefText] = useState('');
@@ -69,6 +70,15 @@ export default function OfficerDashboard({ user, incidents, onResolve, onLogout,
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Theme switcher */}
+          <button
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-all shadow-sm"
+            title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+          >
+            {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
+
           <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-xl">
             <User className="w-4 h-4 text-amber-400" />
             <span className="text-xs text-white font-semibold">{user.username}</span>
@@ -181,10 +191,19 @@ export default function OfficerDashboard({ user, incidents, onResolve, onLogout,
                 </div>
               </div>
 
+              {/* Map Location GPS tracker */}
+              <div className="h-40 rounded-xl overflow-hidden border border-slate-200 relative shadow-sm">
+                <Map 
+                  incidents={[selectedIncident]} 
+                  center={[selectedIncident.latitude, selectedIncident.longitude]} 
+                  zoom={15} 
+                />
+              </div>
+
               {/* Presets selector */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Select Resolved Proof Photo</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2 mb-2">
                   {RESOLUTION_PRESETS.map((preset, idx) => (
                     <button
                       key={idx}
@@ -199,6 +218,28 @@ export default function OfficerDashboard({ user, incidents, onResolve, onLogout,
                       {preset.name}
                     </button>
                   ))}
+                </div>
+
+                {/* Custom Resolution Image Upload */}
+                <div className="mt-2">
+                  <label className="flex items-center justify-center gap-2 w-full px-4 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xs font-semibold text-slate-600 dark:text-slate-400">
+                    <span>📁 Upload Custom Resolution Photo</span>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setAfterImage(reader.result);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
                 </div>
               </div>
 

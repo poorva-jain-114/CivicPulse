@@ -51,15 +51,15 @@ async function runTests() {
 
   // Test 3: Haversine Distance (Clustering)
   console.log('>> [TEST 3] Testing Duplicate Clustering Proximity...');
-  const puneStationLat = 18.5289;
-  const puneStationLng = 73.8744;
-  const nearbyLat = 18.5292; // Approx 40-50m away
-  const nearbyLng = 73.8741;
-  const farLat = 18.5400; // Approx 1.5km away
-  const farLng = 73.8800;
+  const nagpurStationLat = 21.1543;
+  const nagpurStationLng = 79.0882;
+  const nearbyLat = 21.1546; // Approx 40-50m away
+  const nearbyLng = 79.0879;
+  const farLat = 21.1654; // Approx 1.5km away
+  const farLng = 79.0938;
 
-  const distanceNearby = calculateDistance(puneStationLat, puneStationLng, nearbyLat, nearbyLng);
-  const distanceFar = calculateDistance(puneStationLat, puneStationLng, farLat, farLng);
+  const distanceNearby = calculateDistance(nagpurStationLat, nagpurStationLng, nearbyLat, nearbyLng);
+  const distanceFar = calculateDistance(nagpurStationLat, nagpurStationLng, farLat, farLng);
 
   console.log(`   - Nearby distance: ${distanceNearby.toFixed(2)} meters`);
   console.log(`   - Far distance: ${distanceFar.toFixed(2)} meters`);

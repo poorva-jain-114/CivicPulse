@@ -2,7 +2,7 @@
   "users": [
     {
       "_id": "5iko5d7mqug25q1",
-      "points": 235,
+      "points": 300,
       "username": "citizen",
       "password": "$2a$10$HrUx/9rcPs0e9GNeY5DkZ.rIttGBi/9C.q7I6cNrYbtfyvqif.T/C",
       "role": "citizen",
@@ -93,6 +93,17 @@
       "role": "analytics",
       "ward": "Ward 5",
       "createdAt": "2026-06-26T04:41:51.963Z"
+    },
+    {
+      "_id": "nib8re5mquka1x7",
+      "points": 0,
+      "username": "poorva",
+      "password": "$2a$10$tjJMJfxhep4gfrl9C5uOMeNfvJJqsLY4511YE5KpAcgOdm7oTeQ.y",
+      "role": "citizen",
+      "department": null,
+      "ward": "Ward 4",
+      "mobileNumber": "7972604648",
+      "createdAt": "2026-06-26T06:39:57.499Z"
     }
   ],
   "incidents": [
@@ -105,14 +116,14 @@
       "confirmations": 1,
       "isClusterMaster": true,
       "clusterId": null,
-      "escalated": false,
+      "escalated": true,
       "createdAt": "2026-06-23T04:41:51.907Z",
       "title": "Major Road Potholes",
       "description": "Huge pothole near City Center School causing major traffic jams and vehicles getting damaged.",
       "category": "Roads & Footpaths",
       "priority": 88,
-      "latitude": 18.5204,
-      "longitude": 73.8567,
+      "latitude": 21.1458,
+      "longitude": 79.0882,
       "department": "Roads & Buildings Maintenance",
       "brief": "Sarthi AI parsed brief: Potholes reported near school zone on main road. Highly dangerous for two-wheelers, needs urgent repair before rain.",
       "reportedBy": "citizen",
@@ -131,8 +142,8 @@
       "description": "A massive pile of solid waste has accumulated near the main bus stop in Ward 5. Bad smell and stray dogs gather.",
       "category": "Sanitation & Solid Waste",
       "priority": 62,
-      "latitude": 18.5225,
-      "longitude": 73.861,
+      "latitude": 21.1479,
+      "longitude": 79.0925,
       "department": "Public Health & Sanitation",
       "brief": "Sarthi AI parsed brief: Solid waste pile-up near transit station. Bad smell and stray animal congregation reported. Assigned to sanitation crew.\n[Sarthi CV Verification: Confidence 90%. Visual check successful. Edge consistency: 90%. Background match: 90%. AI confirms anomaly cleared.]",
       "reportedBy": "citizen",
@@ -156,13 +167,38 @@
       "description": "माझ्या घराजवळ एक घंटा आहे गड्डा",
       "category": "Sanitation & Solid Waste",
       "priority": 50,
-      "latitude": 18.557117,
-      "longitude": 73.920951,
+      "latitude": 21.182517,
+      "longitude": 79.152451,
       "department": "Public Health & Sanitation",
       "brief": "A complaint has been registered regarding sanitation & solid waste. Immediate inspection and resolution is requested to prevent public inconvenience.\n[Sarthi CV Verification: Confidence 86%. Visual check successful. Edge consistency: 85%. Background match: 87%. AI confirms anomaly cleared.]",
       "reportedBy": "citizen",
       "beforeImage": "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=400",
       "assignedOfficer": "officer_sanitation",
+      "afterImage": "https://images.unsplash.com/photo-1599740831464-67252fec2e31?q=80&w=400",
+      "resolutionBrief": "The team visited the site and resolved the issue. Work complete."
+    },
+    {
+      "_id": "cesprgtmquja55p",
+      "status": "Verified",
+      "upvotes": [
+        "citizen"
+      ],
+      "confirmations": 1,
+      "isClusterMaster": true,
+      "clusterId": null,
+      "escalated": false,
+      "createdAt": "2026-06-26T06:12:02.077Z",
+      "title": "Report of Major Potholes",
+      "description": "there is an open pothole in my area",
+      "category": "Roads & Footpaths",
+      "priority": 65,
+      "latitude": 21.148633,
+      "longitude": 79.06523,
+      "department": "Roads & Buildings Maintenance",
+      "brief": "A complaint has been registered regarding roads & footpaths. Immediate inspection and resolution is requested to prevent public inconvenience.\n[Sarthi CV Verification: Confidence 90%. Visual check successful. Edge consistency: 85%. Background match: 94%. AI confirms anomaly cleared.]",
+      "reportedBy": "citizen",
+      "beforeImage": "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=400",
+      "assignedOfficer": "officer_roads",
       "afterImage": "https://images.unsplash.com/photo-1599740831464-67252fec2e31?q=80&w=400",
       "resolutionBrief": "The team visited the site and resolved the issue. Work complete."
     }
@@ -194,6 +230,16 @@
       "ward": "Ward 5",
       "severity": "High",
       "category": "Sanitation"
+    }
+  ],
+  "auditLogs": [
+    {
+      "_id": "2b051gamqujio8c",
+      "timestamp": "2026-06-26T06:18:40.044Z",
+      "action": "INCIDENT_ESCALATION",
+      "details": "AUTO-ESCALATION: SLA threshold exceeded. Ticket automatically escalated to Ward Municipal Commissioner.",
+      "operatorId": "SARTHI_AI_SLA_CLOCK",
+      "incidentId": "ucev5mgmqug26n8"
     }
   ]
 }

@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-gov-bg text-slate-800 font-sans;
+    @apply bg-gov-bg text-slate-800 font-sans transition-colors duration-300;
     font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
   }
 }
@@ -32,6 +32,16 @@
   height: 100%;
   border-radius: 0.75rem;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  transition: filter 0.3s ease;
+}
+
+/* Leaflet Dark mode style hack using CSS filters */
+.dark .leaflet-tile {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) !important;
+}
+.dark .leaflet-container {
+  background: #0b132b !important;
+  border-color: #3a506b !important;
 }
 
 /* Custom animations for Sarthi processing indicators */
@@ -56,4 +66,94 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dark .glassmorphism {
+  background: rgba(28, 37, 65, 0.85) !important;
+  border-color: rgba(58, 80, 107, 0.4) !important;
+  color: #f1f5f9 !important;
+}
+
+/* Global Dark Mode Overrides */
+.dark body {
+  background-color: #0b132b !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .bg-white {
+  background-color: #1c2541 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .text-slate-800 {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-slate-700 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+.dark .text-slate-900 {
+  color: #ffffff !important;
+}
+
+.dark .border-slate-200 {
+  border-color: #3a506b !important;
+}
+
+.dark .border-slate-100 {
+  border-color: #1e293b !important;
+}
+
+.dark .bg-slate-50 {
+  background-color: #0b132b !important;
+  border-color: #3a506b !important;
+}
+
+.dark .bg-slate-50\/30 {
+  background-color: rgba(11, 19, 43, 0.3) !important;
+}
+
+.dark .bg-slate-50\/50 {
+  background-color: rgba(11, 19, 43, 0.5) !important;
+}
+
+.dark .bg-slate-100 {
+  background-color: #0b132b !important;
+  border-color: #3a506b !important;
+}
+
+.dark input, .dark select, .dark textarea {
+  background-color: #0b132b !important;
+  border-color: #3a506b !important;
+  color: #ffffff !important;
+}
+
+.dark input::placeholder, .dark textarea::placeholder {
+  color: #475569 !important;
+}
+
+/* CSS Print Stylesheet for Analytics PDF Exports */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12px;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-card {
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
 }

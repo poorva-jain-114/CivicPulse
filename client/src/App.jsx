@@ -16,6 +16,9 @@ export default function App() {
   const [analyticsSummary, setAnalyticsSummary] = useState(null);
   const [globalError, setGlobalError] = useState('');
   const [globalSuccess, setGlobalSuccess] = useState('');
+  const [theme, setTheme] = useState(localStorage.getItem('sarthi_theme') || 'light');
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [lastLogId, setLastLogId] = useState('');
 
   // Auto-load user from token if saved
   useEffect(() => {
@@ -32,6 +35,15 @@ export default function App() {
       localStorage.removeItem('sarthi_token');
     }
   }, [token]);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('sarthi_theme', theme);
+  }, [theme]);
 
   const routeByRole = (role) => {
     if (role === 'citizen') setPage('citizen');
@@ -85,6 +97,34 @@ export default function App() {
       if (sumRes.ok) {
         const data = await sumRes.json();
         setAnalyticsSummary(data);
+      }
+
+      // 4. Fetch Audit Logs
+      const auditRes = await fetch(`${API_BASE}/incidents/audit-logs`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (auditRes.ok) {
+        const logsData = await auditRes.json();
+        setAuditLogs(logsData);
+
+        // Toast WebSockets Notifications simulator
+        if (logsData.length > 0) {
+          if (!lastLogId) {
+            setLastLogId(logsData[0]._id || logsData[0].id);
+          } else {
+            const newLogs = [];
+            for (const log of logsData) {
+              if ((log._id || log.id) === lastLogId) break;
+              newLogs.push(log);
+            }
+            if (newLogs.length > 0) {
+              newLogs.reverse().forEach(log => {
+                setGlobalSuccess(`🛡️ Sarthi OS: [${log.action}] ${log.details}`);
+              });
+              setLastLogId(logsData[0]._id || logsData[0].id);
+            }
+          }
+        }
       }
     } catch (err) {
       console.error('Failed to sync with API backend:', err);
@@ -273,6 +313,8 @@ export default function App() {
             API_BASE={API_BASE}
             setGlobalError={setGlobalError}
             setGlobalSuccess={setGlobalSuccess}
+            theme={theme}
+            setTheme={setTheme}
           />
         )}
         
@@ -284,6 +326,8 @@ export default function App() {
             onUpvote={handleUpvote}
             onLogout={handleLogout}
             setPage={setPage}
+            theme={theme}
+            setTheme={setTheme}
           />
         )}
 
@@ -294,6 +338,8 @@ export default function App() {
             onResolve={handleResolve}
             onLogout={handleLogout}
             setPage={setPage}
+            theme={theme}
+            setTheme={setTheme}
           />
         )}
 
@@ -302,10 +348,13 @@ export default function App() {
             user={user}
             incidents={incidents}
             alerts={alerts}
+            auditLogs={auditLogs}
             onAssign={handleAssign}
             onEscalate={handleEscalate}
             onLogout={handleLogout}
             setPage={setPage}
+            theme={theme}
+            setTheme={setTheme}
           />
         )}
 
@@ -317,6 +366,8 @@ export default function App() {
             summary={analyticsSummary}
             onLogout={handleLogout}
             setPage={setPage}
+            theme={theme}
+            setTheme={setTheme}
           />
         )}
       </div>

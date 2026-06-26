@@ -1,13 +1,13 @@
 import React from 'react';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
-import { LogOut, BarChart2, ShieldAlert, Award, MapPin, AlertTriangle, ShieldCheck, Zap } from 'lucide-react';
+import { LogOut, BarChart2, ShieldAlert, Award, MapPin, AlertTriangle, ShieldCheck, Zap, Moon, Sun, Printer } from 'lucide-react';
 import Map from '../components/Map';
 
 // Register ChartJS modules
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
-export default function AnalyticsDashboard({ user, incidents, alerts, summary, onLogout, setPage }) {
+export default function AnalyticsDashboard({ user, incidents, alerts, summary, onLogout, setPage, theme, setTheme }) {
 
   // Prepare fallback data if summary is loading
   const stats = summary?.totals || { total: 0, resolved: 0, open: 0, inProgress: 0, escalated: 0, spam: 0 };
@@ -64,8 +64,22 @@ export default function AnalyticsDashboard({ user, incidents, alerts, summary, o
 
   return (
     <div className="flex-grow flex flex-col">
+      {/* Print-only Header */}
+      <div className="hidden print:block border-b-2 border-slate-800 pb-4 mb-6 px-6 pt-4">
+        <div className="flex justify-between items-end">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Civic Pulse — Sarthi AI Report</h1>
+            <p className="text-xs text-slate-500">Autonomous Civic Command Center • Executive Summary</p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs font-semibold text-slate-700">Official Municipal Record</p>
+            <p className="text-[10px] text-slate-400">Generated on: {new Date().toLocaleString()}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
-      <header className="bg-gov-navy text-white px-6 py-4 flex items-center justify-between shadow-md">
+      <header className="bg-gov-navy text-white px-6 py-4 flex items-center justify-between shadow-md no-print">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center border border-teal-500/30 text-teal-400 font-extrabold text-lg">
             AC
@@ -77,6 +91,25 @@ export default function AnalyticsDashboard({ user, incidents, alerts, summary, o
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Theme switcher */}
+          <button
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-all shadow-sm"
+            title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+          >
+            {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
+
+          {/* Export PDF Report */}
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 rounded-xl text-xs text-white font-bold transition-all"
+            title="Export PDF Report"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Export PDF</span>
+          </button>
+
           <button 
             onClick={() => setPage('admin')}
             className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs text-white font-bold transition-all"
@@ -99,77 +132,77 @@ export default function AnalyticsDashboard({ user, incidents, alerts, summary, o
       </header>
 
       {/* Main Command Dashboard Layout */}
-      <main className="flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 max-w-7xl mx-auto w-full">
+      <main className="flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 max-w-7xl mx-auto w-full print:flex print:flex-col print:gap-6 print:p-0 print:max-w-none">
         
         {/* TOP ROW: Aggregated metrics cards */}
-        <section className="lg:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <section className="lg:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-4 print:grid-cols-4 print:gap-4">
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between print-card">
             <div>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Reports</span>
               <p className="text-2xl font-extrabold text-slate-800 mt-1">{stats.total}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 text-slate-600 font-bold text-sm">#</div>
+            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 text-slate-600 font-bold text-sm no-print">#</div>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between print-card">
             <div>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Resolved</span>
               <p className="text-2xl font-extrabold text-gov-emerald mt-1">{stats.resolved}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100 text-emerald-600">✓</div>
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100 text-emerald-600 no-print">✓</div>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between print-card">
             <div>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Escalated Inbox</span>
               <p className="text-2xl font-extrabold text-gov-crimson mt-1">{stats.escalated}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center border border-red-100 text-red-600">🚨</div>
+            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center border border-red-100 text-red-600 no-print">🚨</div>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between print-card">
             <div>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Spam Blocked</span>
               <p className="text-2xl font-extrabold text-slate-500 mt-1">{stats.spam}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-150 text-slate-400">🛡️</div>
+            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-150 text-slate-400 no-print">🛡️</div>
           </div>
         </section>
 
         {/* MIDDLE ROW LEFT: Map */}
-        <section className="lg:col-span-8 flex flex-col gap-6">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
+        <section className="lg:col-span-8 flex flex-col gap-6 print:w-full print:gap-6">
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3 print-card">
             <div>
               <h2 className="text-sm font-bold text-slate-800">Geographic Anomaly Heatmap</h2>
-              <p className="text-[11px] text-slate-500">Real-time GPS coordinate mapping of civic incidents in Pune. Dark borders represent clustered incidents.</p>
+              <p className="text-[11px] text-slate-500">Real-time GPS coordinate mapping of civic incidents in Pune. Pulsing overlay radii indicate priority hazard areas.</p>
             </div>
-            <div className="h-[350px]">
+            <div className="h-[350px] print:h-[280px]">
               <Map incidents={incidents} />
             </div>
           </div>
           
           {/* Predictive risk alerts list */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col print-card">
             <h2 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-              <Zap className="w-4 h-4 text-gov-crimson animate-bounce" />
+              <Zap className="w-4 h-4 text-gov-crimson animate-bounce no-print" />
               Sarthi AI Predictive Infrastructure Risk Alerts
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">Machine learning anomaly forecasting pipelines predicting localized utility collapses.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 print:grid-cols-3 print:gap-3">
               {alerts.map((al, idx) => (
                 <div 
                   key={idx} 
-                  className={`p-3.5 rounded-xl border flex flex-col justify-between gap-3 transition-all ${
+                  className={`p-3.5 rounded-xl border flex flex-col justify-between gap-3 transition-all print-card ${
                     al.severity === 'High' 
-                      ? 'bg-red-50/55 border-red-200 hover:border-red-400' 
-                      : 'bg-amber-50/55 border-amber-200 hover:border-amber-400'
+                      ? 'bg-red-50/55 border-red-200 hover:border-red-400 dark:bg-red-950/20' 
+                      : 'bg-amber-50/55 border-amber-200 hover:border-amber-400 dark:bg-amber-950/20'
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <span className={`px-2 py-0.5 rounded text-[8px] font-extrabold uppercase ${
-                        al.severity === 'High' ? 'bg-red-200 text-red-800' : 'bg-amber-200 text-amber-900'
+                        al.severity === 'High' ? 'bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-200' : 'bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200'
                       }`}>
                         {al.severity} Severity
                       </span>
@@ -190,36 +223,64 @@ export default function AnalyticsDashboard({ user, incidents, alerts, summary, o
         </section>
 
         {/* MIDDLE ROW RIGHT: Charts & SLA score boards */}
-        <section className="lg:col-span-4 flex flex-col gap-6">
+        <section className="lg:col-span-4 flex flex-col gap-6 print:w-full print:gap-6">
           {/* Status Breakdown Doughnut Chart */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col print-card">
             <h2 className="text-sm font-bold text-slate-800">Grievance Life Cycle Ratio</h2>
-            <div className="h-44 relative mt-4">
+            <div className="h-44 relative mt-4 print:h-36">
               <Doughnut data={statusChartData} options={{ maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }} />
             </div>
           </div>
 
           {/* Department SLA performance */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col print-card">
             <h2 className="text-sm font-bold text-slate-800">Department SLA Performance</h2>
-            <div className="h-44 mt-4 relative">
+            <div className="h-44 mt-4 relative no-print">
               <Bar data={deptChartData} options={chartOptions} />
+            </div>
+            
+            {/* SLA Table (always rendered, styled beautifully for screen and print) */}
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full text-left border-collapse text-[10px]">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-500 uppercase tracking-wider text-[8px] font-bold">
+                    <th className="py-1.5 px-2">Department</th>
+                    <th className="py-1.5 px-2 text-center">Total</th>
+                    <th className="py-1.5 px-2 text-center">Resolved</th>
+                    <th className="py-1.5 px-2 text-right">SLA Score</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {deptStats.map((d, index) => (
+                    <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                      <td className="py-1.5 px-2 font-semibold text-slate-700 dark:text-slate-200">{d.name.split(' & ')[0].split(' / ')[0]}</td>
+                      <td className="py-1.5 px-2 text-center text-slate-600 dark:text-slate-400">{d.total}</td>
+                      <td className="py-1.5 px-2 text-center text-slate-600 dark:text-slate-400">{d.resolved}</td>
+                      <td className="py-1.5 px-2 text-right font-bold">
+                        <span className={d.slaScore >= 80 ? 'text-emerald-600' : d.slaScore >= 60 ? 'text-amber-500' : 'text-red-500'}>
+                          {d.slaScore}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
           {/* Ward safety indices */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col print-card">
             <h2 className="text-sm font-bold text-slate-800">Ward Safety & Health Rating</h2>
             <p className="text-[11px] text-slate-500 mt-0.5">Aggregated rating scores based on ticket closure SLAs.</p>
             
-            <div className="space-y-3 mt-4">
+            <div className="space-y-3 mt-4 print:space-y-2">
               {Object.entries(wardScores).map(([wardName, rating]) => (
                 <div key={wardName} className="flex flex-col gap-1">
                   <div className="flex justify-between items-center text-xs font-semibold">
                     <span className="text-slate-600">{wardName}</span>
                     <span className="text-slate-800">{rating}%</span>
                   </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5">
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5">
                     <div 
                       className={`h-1.5 rounded-full ${
                         rating >= 85 ? 'bg-emerald-500' : rating >= 70 ? 'bg-amber-500' : 'bg-red-500'
