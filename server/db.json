@@ -1,0 +1,199 @@
+{
+  "users": [
+    {
+      "_id": "5iko5d7mqug25q1",
+      "points": 235,
+      "username": "citizen",
+      "password": "$2a$10$HrUx/9rcPs0e9GNeY5DkZ.rIttGBi/9C.q7I6cNrYbtfyvqif.T/C",
+      "role": "citizen",
+      "ward": "Ward 5",
+      "createdAt": "2026-06-26T04:41:50.713Z"
+    },
+    {
+      "_id": "myqlsermqug25u3",
+      "points": 120,
+      "username": "citizen",
+      "password": "$2a$10$h/QfhReO5KWEB5V8sYInZer1qMmptRXTp9XuCz46HmvTjA5xaw/o6",
+      "role": "citizen",
+      "ward": "Ward 5",
+      "createdAt": "2026-06-26T04:41:50.859Z"
+    },
+    {
+      "_id": "w33zl31mqug260r",
+      "points": 0,
+      "username": "officer_roads",
+      "password": "$2a$10$LdjlDT8pZudUNadtdepH0.r3F0roSknLqeuqqD9p0wxFJiUY4rPIK",
+      "role": "officer",
+      "department": "Roads & Buildings Maintenance",
+      "ward": "Ward 5",
+      "createdAt": "2026-06-26T04:41:51.099Z"
+    },
+    {
+      "_id": "l5thkgcmqug261c",
+      "points": 0,
+      "username": "officer_roads",
+      "password": "$2a$10$igOTHpGj/rjjEb4rSAroA.XBtnmHTVkd4iA85x1x75gFpl7N88api",
+      "role": "officer",
+      "department": "Roads & Buildings Maintenance",
+      "ward": "Ward 5",
+      "createdAt": "2026-06-26T04:41:51.120Z"
+    },
+    {
+      "_id": "dimq4xmmqug268u",
+      "points": 0,
+      "username": "officer_sanitation",
+      "password": "$2a$10$j5b/A4ZVX7CbJ3nvZOds3OLUc.RURinrMZZk28WgA/4L.CxTpbIaa",
+      "role": "officer",
+      "department": "Public Health & Sanitation",
+      "ward": "Ward 5",
+      "createdAt": "2026-06-26T04:41:51.390Z"
+    },
+    {
+      "_id": "s27twhsmqug269j",
+      "points": 0,
+      "username": "officer_sanitation",
+      "password": "$2a$10$IqcZ2wuSLSKZlL95/Rh.SeBuS7SrM9vsjnTU4ImJu1zjKhRa48mbG",
+      "role": "officer",
+      "department": "Public Health & Sanitation",
+      "ward": "Ward 5",
+      "createdAt": "2026-06-26T04:41:51.415Z"
+    },
+    {
+      "_id": "cdolv8wmqug26fd",
+      "points": 0,
+      "username": "admin",
+      "password": "$2a$10$22awyMZ3MlPPq2VtA8sohOmxow2FTt2/GsDqw3mEVfxwBULkWEdKG",
+      "role": "admin",
+      "ward": "Ward 5",
+      "createdAt": "2026-06-26T04:41:51.625Z"
+    },
+    {
+      "_id": "ofjcomtmqug26g0",
+      "points": 0,
+      "username": "admin",
+      "password": "$2a$10$2zGizk2V3nsHfgtayee1kOqZyB.MYbWA5EMXwNYir948e.4oXEzSq",
+      "role": "admin",
+      "ward": "Ward 5",
+      "createdAt": "2026-06-26T04:41:51.648Z"
+    },
+    {
+      "_id": "rijurcdmqug26mn",
+      "points": 0,
+      "username": "analytics",
+      "password": "$2a$10$W6EmfeqxCXLDh9aUEOgqjelszO55mSfsZ.HvPt3/CGtz52tZ3n8Ue",
+      "role": "analytics",
+      "ward": "Ward 5",
+      "createdAt": "2026-06-26T04:41:51.887Z"
+    },
+    {
+      "_id": "4g2zzspmqug26or",
+      "points": 0,
+      "username": "analytics",
+      "password": "$2a$10$7DhZHBGu6fz4X0xRK3ZYI.oI1nhudJpjhTn3Xbc7zPYwpYxQB6DK2",
+      "role": "analytics",
+      "ward": "Ward 5",
+      "createdAt": "2026-06-26T04:41:51.963Z"
+    }
+  ],
+  "incidents": [
+    {
+      "_id": "ucev5mgmqug26n8",
+      "status": "Open",
+      "upvotes": [
+        "citizen"
+      ],
+      "confirmations": 1,
+      "isClusterMaster": true,
+      "clusterId": null,
+      "escalated": false,
+      "createdAt": "2026-06-23T04:41:51.907Z",
+      "title": "Major Road Potholes",
+      "description": "Huge pothole near City Center School causing major traffic jams and vehicles getting damaged.",
+      "category": "Roads & Footpaths",
+      "priority": 88,
+      "latitude": 18.5204,
+      "longitude": 73.8567,
+      "department": "Roads & Buildings Maintenance",
+      "brief": "Sarthi AI parsed brief: Potholes reported near school zone on main road. Highly dangerous for two-wheelers, needs urgent repair before rain.",
+      "reportedBy": "citizen",
+      "beforeImage": "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=400"
+    },
+    {
+      "_id": "74v7p7hmqug26nx",
+      "status": "Verified",
+      "upvotes": [],
+      "confirmations": 1,
+      "isClusterMaster": true,
+      "clusterId": null,
+      "escalated": false,
+      "createdAt": "2026-06-26T04:41:51.907Z",
+      "title": "Garbage Pile near Bus Stop",
+      "description": "A massive pile of solid waste has accumulated near the main bus stop in Ward 5. Bad smell and stray dogs gather.",
+      "category": "Sanitation & Solid Waste",
+      "priority": 62,
+      "latitude": 18.5225,
+      "longitude": 73.861,
+      "department": "Public Health & Sanitation",
+      "brief": "Sarthi AI parsed brief: Solid waste pile-up near transit station. Bad smell and stray animal congregation reported. Assigned to sanitation crew.\n[Sarthi CV Verification: Confidence 90%. Visual check successful. Edge consistency: 90%. Background match: 90%. AI confirms anomaly cleared.]",
+      "reportedBy": "citizen",
+      "assignedOfficer": "officer_sanitation",
+      "beforeImage": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?q=80&w=400",
+      "afterImage": "https://images.unsplash.com/photo-1599740831464-67252fec2e31?q=80&w=400",
+      "resolutionBrief": "The team visited the site and resolved the issue. Work complete."
+    },
+    {
+      "_id": "rzx6ugzmqugp4av",
+      "status": "Verified",
+      "upvotes": [
+        "citizen"
+      ],
+      "confirmations": 1,
+      "isClusterMaster": true,
+      "clusterId": null,
+      "escalated": false,
+      "createdAt": "2026-06-26T04:59:41.959Z",
+      "title": "Garbage Accumulation Grievance",
+      "description": "माझ्या घराजवळ एक घंटा आहे गड्डा",
+      "category": "Sanitation & Solid Waste",
+      "priority": 50,
+      "latitude": 18.557117,
+      "longitude": 73.920951,
+      "department": "Public Health & Sanitation",
+      "brief": "A complaint has been registered regarding sanitation & solid waste. Immediate inspection and resolution is requested to prevent public inconvenience.\n[Sarthi CV Verification: Confidence 86%. Visual check successful. Edge consistency: 85%. Background match: 87%. AI confirms anomaly cleared.]",
+      "reportedBy": "citizen",
+      "beforeImage": "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=400",
+      "assignedOfficer": "officer_sanitation",
+      "afterImage": "https://images.unsplash.com/photo-1599740831464-67252fec2e31?q=80&w=400",
+      "resolutionBrief": "The team visited the site and resolved the issue. Work complete."
+    }
+  ],
+  "alerts": [
+    {
+      "_id": "1r9nzjzmqug25uw",
+      "createdAt": "2026-06-26T04:41:50.888Z",
+      "title": "Water Pipeline Structural Stress",
+      "description": "Sarthi AI detected a water pipeline stress index of 87% in Ward 5. Localized pressure leakage reports and water contamination complaints have spiked 320% near City Center. High probability of pipe rupture within 72 hours.",
+      "ward": "Ward 5",
+      "severity": "High",
+      "category": "Water"
+    },
+    {
+      "_id": "t4rd9zwmqug25vi",
+      "createdAt": "2026-06-26T04:41:50.910Z",
+      "title": "Substation Transformer Overload Threat",
+      "description": "Streetlight flicker reports, hanging live wires, and power voltage complaints are up 45% this week in Ward 3. Phase L2 transformer load index is exceeding safe limits. Threat of localized grid blackout.",
+      "ward": "Ward 3",
+      "severity": "Medium",
+      "category": "Electricity"
+    },
+    {
+      "_id": "j522vgvmqug25w3",
+      "createdAt": "2026-06-26T04:41:50.931Z",
+      "title": "Severe Waterlogging / Drainage Clog Alert",
+      "description": "Accumulation of debris and unresolved waste reports near the main stormwater vents in Ward 5 indicates 85% drain blockage. Heavy rains predicted in 24 hours will cause severe intersection waterlogging.",
+      "ward": "Ward 5",
+      "severity": "High",
+      "category": "Sanitation"
+    }
+  ]
+}
